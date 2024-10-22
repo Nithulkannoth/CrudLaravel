@@ -39,15 +39,13 @@ class productController extends Controller
         return view('product.edit', compact('product'));
     }
 
-    public function update(Request $request, product $name)
+    public function update(Request $request, product $product)
     {
         $request->validate([
             // Add your validation rules here
         ]);
 
-        dd($name);
-
-        $name->update($request->all());
+        $product->update($request->all());
 
         return redirect()->route('product.index')->with('success', 'product updated successfully.');
     }

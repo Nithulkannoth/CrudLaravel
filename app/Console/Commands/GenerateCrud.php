@@ -104,13 +104,13 @@ class {$name}Controller extends Controller
         return view('$name.edit', compact('$name'));
     }
 
-    public function update(Request \$request, $name \$name)
+    public function update(Request \$request, $name \$$name)
     {
         \$request->validate([
             // Add your validation rules here
         ]);
 
-        \$name->update(\$request->all());
+        \${$name}->update(\$request->all());
 
         return redirect()->route('$name.index')->with('success', '$name updated successfully.');
     }
