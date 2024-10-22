@@ -132,35 +132,35 @@ EOD;
     // Generate index view (list with pagination)
     protected function generateIndexView($name, $columns)
     {
+        // Use the variable name as lowercase for the collection
+        $variableName = strtolower($name); // e.g., 'product'
+
         $html = "@extends('layouts.app')\n@section('content')\n<div class=\"container\">\n";
-        $html .= "<h1>{{ ucfirst('$name') }} List</h1>\n";
-        $html .= "<a href=\"{{ route('$name.create') }}\" class=\"btn btn-primary mb-3\">Add New {{ ucfirst('$name') }}</a>\n";
+        $html .= "<h1>{{ ucfirst('$name') }} List</h1>\n<a href=\"{{ route('$variableName.create') }}\" class=\"btn btn-primary mb-3\">Add New {{ ucfirst('$name') }}</a>\n";
         $html .= "<table class=\"table table-bordered\">\n<thead>\n<tr>\n";
 
-        // Add table headers
         foreach ($columns as $column) {
-            $html .= "<th>{{ ucfirst('$column') }}</th>\n";
+            $html .= "<th>{{ ucfirst('$column') }}</th>\n"; // Create table headers
         }
+
         $html .= "<th>Actions</th>\n</tr>\n</thead>\n<tbody>\n";
-        
-        // Change $items to the expected variable name based on your controller
-        $html .= "@foreach(\$$name as \$item)\n<tr>\n";
+        $html .= "@foreach(\$$variableName as \$item)\n<tr>\n"; // Loop through items
 
-        // Add table data
         foreach ($columns as $column) {
-            $html .= "<td>{{ \$item->$column }}</td>\n";
+            $html .= "<td>{{ \$item->$column }}</td>\n"; // Output each item's column
         }
 
-        // Add actions for edit and delete
-        $html .= "<td>\n<a href=\"{{ route('$name.edit', \$item->id) }}\" class=\"btn btn-warning\">Edit</a>\n";
-        $html .= "<form action=\"{{ route('$name.destroy', \$item->id) }}\" method=\"POST\" style=\"display:inline;\">\n";
-        $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n";
-        $html .= "@endforeach\n</tbody>\n</table>\n";
-        // $html .= "<div class=\"d-flex justify-content-center\">{{ \$$name->links() }}</div>\n"; // For pagination
+        $html .= "<td>\n<a href=\"{{ route('$variableName.edit', \$item->id) }}\" class=\"btn btn-warning\">Edit</a>\n"; // Edit link
+        $html .= "<form action=\"{{ route('$variableName.destroy', \$item->id) }}\" method=\"POST\" style=\"display:inline;\">\n";
+        $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n@endforeach\n"; // End foreach for items
+        $html .= "</tbody>\n</table>\n";
+
+        // This should correctly reference the pagination
+        $html .= "<div class=\"d-flex justify-content-center\">{{ \$${variableName}->links() }}</div>\n"; // Ensure variable is correct for links
         $html .= "</div>\n@endsection\n";
 
         return $html;
-}
+    }
 
     // Generate create view (form for adding new entry)
     protected function generateCreateView($name, $columns)

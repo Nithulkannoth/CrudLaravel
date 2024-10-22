@@ -34,5 +34,6 @@
 @endforeach
 </tbody>
 </table>
+<div class="d-flex justify-content-center">{{ $product->links() }}</div>
 </div>
 @endsection
