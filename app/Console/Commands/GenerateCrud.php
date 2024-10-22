@@ -115,9 +115,9 @@ class {$name}Controller extends Controller
         return redirect()->route('$name.index')->with('success', '$name updated successfully.');
     }
 
-    public function destroy($name \$name)
+    public function destroy($name \$$name)
     {
-        \$name->delete();
+        \${$name}->delete();
 
         return redirect()->route('$name.index')->with('success', '$name deleted successfully.');
     }
