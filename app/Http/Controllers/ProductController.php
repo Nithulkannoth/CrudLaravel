@@ -29,12 +29,12 @@ class productController extends Controller
         return redirect()->route('product.index')->with('success', 'product created successfully.');
     }
 
-    public function show(product $name)
+    public function show(product $product)
     {
         return view('product.show', compact('product'));
     }
 
-    public function edit(product $name)
+    public function edit(product $product)
     {
         return view('product.edit', compact('product'));
     }

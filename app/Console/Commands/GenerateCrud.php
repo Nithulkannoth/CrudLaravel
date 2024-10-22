@@ -94,12 +94,12 @@ class {$name}Controller extends Controller
         return redirect()->route('$name.index')->with('success', '$name created successfully.');
     }
 
-    public function show($name \$name)
+    public function show($name \$$name)
     {
         return view('$name.show', compact('$name'));
     }
 
-    public function edit($name \$name)
+    public function edit($name \$$name)
     {
         return view('$name.edit', compact('$name'));
     }
