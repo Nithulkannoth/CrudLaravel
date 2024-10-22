@@ -144,7 +144,7 @@ EOD;
         $html .= "<th>Actions</th>\n</tr>\n</thead>\n<tbody>\n";
         
         // Change $items to the expected variable name based on your controller
-        $html .= "@foreach(\$items as \$item)\n<tr>\n";
+        $html .= "@foreach(\$$name as \$item)\n<tr>\n";
 
         // Add table data
         foreach ($columns as $column) {
@@ -156,7 +156,7 @@ EOD;
         $html .= "<form action=\"{{ route('$name.destroy', \$item->id) }}\" method=\"POST\" style=\"display:inline;\">\n";
         $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n";
         $html .= "@endforeach\n</tbody>\n</table>\n";
-        $html .= "<div class=\"d-flex justify-content-center\">{{ \$items->links() }}</div>\n"; // For pagination
+        // $html .= "<div class=\"d-flex justify-content-center\">{{ \$$name->links() }}</div>\n"; // For pagination
         $html .= "</div>\n@endsection\n";
 
         return $html;
