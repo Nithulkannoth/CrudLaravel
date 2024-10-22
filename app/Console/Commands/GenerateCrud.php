@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class GenerateCrud extends Command
 {
@@ -24,10 +25,15 @@ class GenerateCrud extends Command
             return;
         }
 
-        // Generate the views and other necessary files
+        // Generate the views and controller
         $this->generateViews($name, $columns);
         $this->generateController($name);
+        
+        // Provide the user with the resource route declaration
+        $routeDeclaration = "Route::resource('{$table}', {$name}Controller::class);";
         $this->info("CRUD for table '{$table}' generated successfully.");
+        $this->line("Add the following line to your routes/web.php:");
+        $this->line($routeDeclaration);
     }
 
     protected function getTableColumns($table)
@@ -53,7 +59,8 @@ class GenerateCrud extends Command
 
     protected function generateController($name)
     {
-        $controllerPath = app_path("Http/Controllers/{$name}Controller.php");
+        $capitalname = ucfirst(Str::camel($name));
+        $controllerPath = app_path("Http/Controllers/{$capitalname}Controller.php");
 
         $controllerContent = <<<EOD
 <?php
@@ -126,27 +133,34 @@ EOD;
     protected function generateIndexView($name, $columns)
     {
         $html = "@extends('layouts.app')\n@section('content')\n<div class=\"container\">\n";
-        $html .= "<h1>{{ ucfirst('$name') }} List</h1>\n<a href=\"{{ route('$name.create') }}\" class=\"btn btn-primary mb-3\">Add New {{ ucfirst('$name') }}</a>\n";
+        $html .= "<h1>{{ ucfirst('$name') }} List</h1>\n";
+        $html .= "<a href=\"{{ route('$name.create') }}\" class=\"btn btn-primary mb-3\">Add New {{ ucfirst('$name') }}</a>\n";
         $html .= "<table class=\"table table-bordered\">\n<thead>\n<tr>\n";
 
+        // Add table headers
         foreach ($columns as $column) {
             $html .= "<th>{{ ucfirst('$column') }}</th>\n";
         }
-
         $html .= "<th>Actions</th>\n</tr>\n</thead>\n<tbody>\n";
-        $html .= "@foreach(\$$name as \$$name)\n<tr>\n";
+        
+        // Change $items to the expected variable name based on your controller
+        $html .= "@foreach(\$items as \$item)\n<tr>\n";
 
+        // Add table data
         foreach ($columns as $column) {
-            $html .= "<td>{{ \$$name->$column }}</td>\n";
+            $html .= "<td>{{ \$item->$column }}</td>\n";
         }
 
-        $html .= "<td>\n<a href=\"{{ route('$name.edit', \$$name->id) }}\" class=\"btn btn-warning\">Edit</a>\n";
-        $html .= "<form action=\"{{ route('$name.destroy', \$$name->id) }}\" method=\"POST\" style=\"display:inline;\">\n";
-        $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n@endforeach\n</tbody>\n</table>\n";
-        $html .= "<div class=\"d-flex justify-content-center\">{{ \$$name->links() }}</div>\n</div>\n@endsection\n";
+        // Add actions for edit and delete
+        $html .= "<td>\n<a href=\"{{ route('$name.edit', \$item->id) }}\" class=\"btn btn-warning\">Edit</a>\n";
+        $html .= "<form action=\"{{ route('$name.destroy', \$item->id) }}\" method=\"POST\" style=\"display:inline;\">\n";
+        $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n";
+        $html .= "@endforeach\n</tbody>\n</table>\n";
+        $html .= "<div class=\"d-flex justify-content-center\">{{ \$items->links() }}</div>\n"; // For pagination
+        $html .= "</div>\n@endsection\n";
 
         return $html;
-    }
+}
 
     // Generate create view (form for adding new entry)
     protected function generateCreateView($name, $columns)
@@ -174,19 +188,23 @@ EOD;
     {
         $html = "@extends('layouts.app')\n@section('content')\n<div class=\"container\">\n";
         $html .= "<h1>Edit {{ ucfirst('$name') }}</h1>\n";
-        $html .= "<form action=\"{{ route('$name.update', \$$name->id) }}\" method=\"POST\">\n@csrf\n@method('PUT')\n";
-
+        $html .= "<form action=\"{{ route('$name.update', \$item->id) }}\" method=\"POST\">\n"; // Change \$$name to \$item
+        $html .= "@csrf\n@method('PUT')\n";
+    
+        // Loop through columns to create form fields
         foreach ($columns as $column) {
             if ($column !== 'id' && $column !== 'created_at' && $column !== 'updated_at') {
                 $html .= "<div class=\"form-group\">\n";
                 $html .= "<label for=\"$column\">{{ ucfirst('$column') }}</label>\n";
-                $html .= "<input type=\"text\" name=\"$column\" class=\"form-control\" id=\"$column\" value=\"{{ \$$name->$column }}\">\n";
+                $html .= "<input type=\"text\" class=\"form-control\" name=\"$column\" id=\"$column\" value=\"{{ \$item->$column }}\" required>\n"; // Use \$item to access model data
                 $html .= "</div>\n";
             }
         }
-
-        $html .= "<button type=\"submit\" class=\"btn btn-success\">Update</button>\n</form>\n</div>\n@endsection\n";
-
+    
+        $html .= "<button type=\"submit\" class=\"btn btn-success\">Update</button>\n";
+        $html .= "<a href=\"{{ route('$name.index') }}\" class=\"btn btn-secondary\">Cancel</a>\n";
+        $html .= "</form>\n</div>\n@endsection\n";
+    
         return $html;
     }
 
