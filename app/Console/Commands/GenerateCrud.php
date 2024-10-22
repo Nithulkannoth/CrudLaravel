@@ -183,12 +183,14 @@ EOD;
         return $html;
     }
 
-    // Generate edit view (form for editing an existing entry)
     protected function generateEditView($name, $columns)
     {
+        $variableName = strtolower($name); // Convert to lowercase for variable name
         $html = "@extends('layouts.app')\n@section('content')\n<div class=\"container\">\n";
         $html .= "<h1>Edit {{ ucfirst('$name') }}</h1>\n";
-        $html .= "<form action=\"{{ route('$name.update', \$item->id) }}\" method=\"POST\">\n"; // Change \$$name to \$item
+    
+        // Correctly reference the variable name for the form action
+        $html .= "<form action=\"{{ route('$variableName.update', \${$variableName}->id) }}\" method=\"POST\">\n"; 
         $html .= "@csrf\n@method('PUT')\n";
     
         // Loop through columns to create form fields
@@ -196,13 +198,14 @@ EOD;
             if ($column !== 'id' && $column !== 'created_at' && $column !== 'updated_at') {
                 $html .= "<div class=\"form-group\">\n";
                 $html .= "<label for=\"$column\">{{ ucfirst('$column') }}</label>\n";
-                $html .= "<input type=\"text\" class=\"form-control\" name=\"$column\" id=\"$column\" value=\"{{ \$item->$column }}\" required>\n"; // Use \$item to access model data
+                // Use the dynamic variable for the value
+                $html .= "<input type=\"text\" class=\"form-control\" name=\"$column\" id=\"$column\" value=\"{{ \${$variableName}->$column }}\" required>\n";
                 $html .= "</div>\n";
             }
         }
     
         $html .= "<button type=\"submit\" class=\"btn btn-success\">Update</button>\n";
-        $html .= "<a href=\"{{ route('$name.index') }}\" class=\"btn btn-secondary\">Cancel</a>\n";
+        $html .= "<a href=\"{{ route('$variableName.index') }}\" class=\"btn btn-secondary\">Cancel</a>\n";
         $html .= "</form>\n</div>\n@endsection\n";
     
         return $html;
