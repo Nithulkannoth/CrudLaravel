@@ -66,17 +66,17 @@ class GenerateCrud extends Command
 
         // Create the content of the model file
         $modelContent = <<<EOD
-            <?php
+        <?php
 
-            namespace App\Models;
+        namespace App\Models;
 
-            use Illuminate\Database\Eloquent\Model;
+        use Illuminate\Database\Eloquent\Model;
 
-            class {$capitalizedName} extends Model
-            {
-                protected \$table = '$name'; // Define the table name
-                protected \$guarded = []; // Guarded properties for mass assignment
-            }
+        class {$capitalizedName} extends Model
+        {
+            protected \$table = '$name'; // Define the table name
+            protected \$guarded = []; // Guarded properties for mass assignment
+        }
         EOD;
 
         // Write the model content to the appropriate file
@@ -96,10 +96,10 @@ class GenerateCrud extends Command
 
         namespace App\Http\Controllers;
 
-        use App\Models\\$name;
+        use App\Models\\$capitalname;
         use Illuminate\Http\Request;
 
-        class {$name}Controller extends Controller
+        class {$capitalname}Controller extends Controller
         {
             public function index()
             {
