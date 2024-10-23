@@ -16,6 +16,7 @@ class GenerateCrud extends Command
     {
         $name = $this->argument('name');
         $table = strtolower($name);
+        $capitalname = ucfirst(Str::camel($name));
 
         // Fetch the table columns dynamically
         $columns = $this->getTableColumns($table);
@@ -31,7 +32,7 @@ class GenerateCrud extends Command
         $this->generateController($name);
         
         // Provide the user with the resource route declaration
-        $routeDeclaration = "Route::resource('{$table}', {$name}Controller::class);";
+        $routeDeclaration = "Route::resource('{$table}', {$capitalname}Controller::class);";
         $this->info("CRUD for table '{$table}' generated successfully.");
         $this->line("Add the following line to your routes/web.php:");
         $this->line($routeDeclaration);
@@ -161,31 +162,42 @@ class GenerateCrud extends Command
     // Generate index view (list with pagination)
     protected function generateIndexView($name, $columns)
     {
-        // Use the variable name as lowercase for the collection
         $variableName = strtolower($name); // e.g., 'product'
 
         $html = "@extends('layouts.app')\n@section('content')\n<div class=\"container\">\n";
-        $html .= "<h1>{{ ucfirst('$name') }} List</h1>\n<a href=\"{{ route('$variableName.create') }}\" class=\"btn btn-primary mb-3\">Add New {{ ucfirst('$name') }}</a>\n";
+        $html .= "<h1>{{ ucfirst('$name') }} List</h1>\n<a href=\"{{ route('$variableName.create') }}\" class=\"btn btn-primary mb-3\">Add {{ ucfirst('$name') }}</a>\n";
         $html .= "<table class=\"table table-bordered\">\n<thead>\n<tr>\n";
 
+        $html .= "<th>No.</th>\n"; 
+
         foreach ($columns as $column) {
-            $html .= "<th>{{ ucfirst('$column') }}</th>\n"; // Create table headers
+            if ($column != 'id' && $column != 'created_at' && $column != 'updated_at') {
+                $html .= "<th>{{ ucfirst('$column') }}</th>\n"; 
+            }
         }
 
         $html .= "<th>Actions</th>\n</tr>\n</thead>\n<tbody>\n";
-        $html .= "@foreach(\$$variableName as \$item)\n<tr>\n"; // Loop through items
 
+        $html .= "@foreach(\$$variableName as \$item)\n<tr>\n"; 
+
+        $html .= "<td>{{ \$loop->iteration + (\${$variableName}->perPage() * (\${$variableName}->currentPage() - 1)) }}</td>\n"; 
+
+        // Loop through the columns again, displaying the data for each item
         foreach ($columns as $column) {
-            $html .= "<td>{{ \$item->$column }}</td>\n"; // Output each item's column
+            if ($column != 'id' && $column != 'created_at' && $column != 'updated_at') {
+                $html .= "<td>{{ \$item->$column }}</td>\n"; 
+            }
         }
 
-        $html .= "<td>\n<a href=\"{{ route('$variableName.edit', \$item->id) }}\" class=\"btn btn-warning\">Edit</a>\n"; // Edit link
+        // Actions (Edit and Delete buttons)
+        $html .= "<td>\n<a href=\"{{ route('$variableName.edit', \$item->id) }}\" class=\"btn btn-warning\">Edit</a>\n"; 
         $html .= "<form action=\"{{ route('$variableName.destroy', \$item->id) }}\" method=\"POST\" style=\"display:inline;\">\n";
-        $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n@endforeach\n"; // End foreach for items
+        $html .= "@csrf\n@method('DELETE')\n<button type=\"submit\" class=\"btn btn-danger\">Delete</button>\n</form>\n</td>\n</tr>\n@endforeach\n";
+
         $html .= "</tbody>\n</table>\n";
 
-        // This should correctly reference the pagination
-        $html .= "<div class=\"d-flex justify-content-center\">{{ \$${variableName}->links() }}</div>\n"; // Ensure variable is correct for links
+        // Correctly reference the pagination
+        $html .= "<div class=\"d-flex justify-content-center\">{{ \${$variableName}->links() }}</div>\n"; 
         $html .= "</div>\n@endsection\n";
 
         return $html;

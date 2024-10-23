@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Candidate extends Model
 {
-    protected $table = 'product'; // Define the table name
+    protected $table = 'candidate'; // Define the table name
     protected $guarded = []; // Guarded properties for mass assignment
 }
