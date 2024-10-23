@@ -27,6 +27,7 @@ class GenerateCrud extends Command
 
         // Generate the views and controller
         $this->generateViews($name, $columns);
+        $this->generateModel($name);
         $this->generateController($name);
         
         // Provide the user with the resource route declaration
@@ -57,72 +58,100 @@ class GenerateCrud extends Command
         File::put("{$viewPath}/show.blade.php", $this->generateShowView($name, $columns));
     }
 
+    protected function generateModel($name)
+    {
+        // Capitalize the first letter of the table name for the model class name
+        $capitalizedName = ucfirst($name);
+        $modelPath = app_path("Models/{$capitalizedName}.php");
+
+        // Create the content of the model file
+        $modelContent = <<<EOD
+            <?php
+
+            namespace App\Models;
+
+            use Illuminate\Database\Eloquent\Model;
+
+            class {$capitalizedName} extends Model
+            {
+                protected \$table = '$name'; // Define the table name
+                protected \$guarded = []; // Guarded properties for mass assignment
+            }
+        EOD;
+
+        // Write the model content to the appropriate file
+        File::put($modelPath, $modelContent);
+
+        // Print success message
+        $this->info("Model {$capitalizedName}.php created successfully.");
+    }
+
     protected function generateController($name)
     {
         $capitalname = ucfirst(Str::camel($name));
         $controllerPath = app_path("Http/Controllers/{$capitalname}Controller.php");
 
         $controllerContent = <<<EOD
-<?php
+        <?php
 
-namespace App\Http\Controllers;
+        namespace App\Http\Controllers;
 
-use App\Models\\$name;
-use Illuminate\Http\Request;
+        use App\Models\\$name;
+        use Illuminate\Http\Request;
 
-class {$name}Controller extends Controller
-{
-    public function index()
-    {
-        \$$name = $name::paginate(10);
-        return view('$name.index', compact('$name'));
-    }
+        class {$name}Controller extends Controller
+        {
+            public function index()
+            {
+                \$$name = $name::paginate(10);
+                return view('$name.index', compact('$name'));
+            }
 
-    public function create()
-    {
-        return view('$name.create');
-    }
+            public function create()
+            {
+                return view('$name.create');
+            }
 
-    public function store(Request \$request)
-    {
-        \$request->validate([
-            // Add your validation rules here
-        ]);
+            public function store(Request \$request)
+            {
+                \$request->validate([
+                    // Add your validation rules here
+                ]);
 
-        $name::create(\$request->all());
+                $name::create(\$request->all());
 
-        return redirect()->route('$name.index')->with('success', '$name created successfully.');
-    }
+                return redirect()->route('$name.index')->with('success', '$name created successfully.');
+            }
 
-    public function show($name \$$name)
-    {
-        return view('$name.show', compact('$name'));
-    }
+            public function show($name \$$name)
+            {
+                return view('$name.show', compact('$name'));
+            }
 
-    public function edit($name \$$name)
-    {
-        return view('$name.edit', compact('$name'));
-    }
+            public function edit($name \$$name)
+            {
+                return view('$name.edit', compact('$name'));
+            }
 
-    public function update(Request \$request, $name \$$name)
-    {
-        \$request->validate([
-            // Add your validation rules here
-        ]);
+            public function update(Request \$request, $name \$$name)
+            {
+                \$request->validate([
+                    // Add your validation rules here
+                ]);
 
-        \${$name}->update(\$request->all());
+                \${$name}->update(\$request->all());
 
-        return redirect()->route('$name.index')->with('success', '$name updated successfully.');
-    }
+                return redirect()->route('$name.index')->with('success', '$name updated successfully.');
+            }
 
-    public function destroy($name \$$name)
-    {
-        \${$name}->delete();
+            public function destroy($name \$$name)
+            {
+                \${$name}->delete();
 
-        return redirect()->route('$name.index')->with('success', '$name deleted successfully.');
-    }
-}
-EOD;
+                return redirect()->route('$name.index')->with('success', '$name deleted successfully.');
+            }
+        }
+        EOD;
 
         File::put($controllerPath, $controllerContent);
         $this->info("Controller {$name}Controller.php created successfully.");
